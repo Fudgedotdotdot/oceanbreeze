@@ -10,7 +10,7 @@
 
 OceanBreeze is a infrastructure management tool to deploy and manage domains on DigitalOcean for pentesting engagements. 
 
-You can use the tool to help mature recently bought domains and help them get categorized by adding website templates in the *webserver/template_website* directory and selecting it when running the tool. 
+You can use the tool to help mature recently bought domains and help them get categorized by adding website templates in the *webserver/template_website* directory and selecting a template when running the tool. 
 
 # Prerequisites
 **This tool only works on WSL (tested on WSL2)**
