@@ -1,0 +1,18 @@
+DOMAIN {
+	tls {
+		dns digitalocean {env.DIGITALOCEAN_TOKEN}
+	}
+	log {
+		output file /opt/caddy/log/access.log
+	}
+	header {
+		import ./filters/headers_standard.caddy
+	}
+	
+	encode gzip zstd
+	handle {
+		file_server {
+			root /var/www/html/fake_website
+		}
+	}
+}

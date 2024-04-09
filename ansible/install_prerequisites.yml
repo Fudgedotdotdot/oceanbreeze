@@ -1,0 +1,48 @@
+# print output with :
+    #   register: output
+    # - debug: var=output.stdout_lines
+- hosts: all
+  name: Installing prerequisites
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+    golang_version: 1.22.1
+  tasks:
+    - block:
+        - name: Wait for cloud-init / user-data to finish
+          # https://github.com/ansible/ansible/issues/51663#issuecomment-1038843039
+          command: cloud-init status --wait
+          changed_when: false
+
+        - name: Install system packages
+          apt:
+            pkg:
+              - apt-transport-https
+              - python3-pip
+            state: latest
+            update_cache: true
+
+        # Golang install (path updated for user, not for ansible)
+        - name: Download Golang tar file
+          command: wget https://go.dev/dl/go{{golang_version}}.linux-amd64.tar.gz
+          args:
+            chdir: /tmp
+      
+        - name: Extract and move new go folder to /usr/local
+          command: tar -C /usr/local -xzf go{{golang_version}}.linux-amd64.tar.gz
+          args:
+            chdir: /tmp
+
+        - name: Delete downloaded tar file
+          command: rm -f go*tar.gz*
+          args:
+            chdir: /tmp
+
+        - name: Add go binary path to ~/.profile
+          lineinfile:
+            path: ~/.bashrc
+            line: 'export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin'
+            create: true
+            state: present
+    
+        - name: Update PATH
+          shell: . ~/.bashrc

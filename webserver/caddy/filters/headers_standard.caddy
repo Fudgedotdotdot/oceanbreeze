@@ -1,0 +1,25 @@
+# Stolen from https://aptw.tf/2021/11/25/c2-redirectors-using-caddy.html
+
+# Add a custom fingerprint signature
+Server "Apache/2.4.50 (Unix) OpenSSL/1.1.1d"
+
+X-Robots-Tag "noindex, nofollow, nosnippet, noarchive"
+X-Content-Type-Options "nosniff"
+
+# disable FLoC tracking
+Permissions-Policy interest-cohort=()
+
+# enable HSTS
+Strict-Transport-Security max-age=31536000;
+
+# disable clients from sniffing the media type
+X-Content-Type-Options nosniff
+
+# clickjacking protection
+X-Frame-Options DENY
+
+# keep referrer data off of HTTP connections
+Referrer-Policy no-referrer-when-downgrade
+
+# Do not allow to cache the response
+Cache-Control no-cache

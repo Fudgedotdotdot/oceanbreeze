@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OceanBreeze"
+version = "1.0.0"
+description = "Manages domain and related infrastructure on DigitalOcean"
+authors = [
+  { name = "Fudgedotdotdot" },
+]
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+  "requests==2.31.0",
+  "rich==13.7.1"
+]
+
+[tool.setuptools.packages.find]
+include = ["oceanbreeze", "oceanbreeze.*"]
+
+[project.scripts]
+oceanbreeze = "oceanbreeze.oceanbreeze:main"

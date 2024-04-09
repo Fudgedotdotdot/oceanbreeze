@@ -1,0 +1,35 @@
+- hosts: all
+  name: Installing caddy and xcaddy 
+  gather_facts: no
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/go/bin:/root/go/bin" # xcaddy needs golang
+  tasks:
+    - block:
+      - name: Create caddy group
+        ansible.builtin.group:
+          name: caddy
+          state: present
+
+      - name: Create caddy user
+        ansible.builtin.user:
+          name: caddy
+          shell: /usr/sbin/nologin
+          comment: Caddy webserver user
+          group: caddy
+
+      - name: Installing xcaddy
+        command: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+
+      - name: Building custom caddy binary for DNS challenge (This takes a while, be patient)
+        command: xcaddy build --with github.com/caddy-dns/digitalocean@master
+        args:
+          chdir: /root
+
+      -  name: Copying custom caddy binary to /usr/bin
+         ansible.builtin.copy:
+          remote_src: true
+          src: /root/caddy
+          dest: /usr/bin/
+          mode: 'a+x'
+
+      

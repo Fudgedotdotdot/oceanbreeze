@@ -1,0 +1,70 @@
+- hosts: all
+  name: Setup Caddy webserver
+  gather_facts: no
+  vars:
+    website: "{{ fake_website }}"
+  tasks:  
+    - block:
+      - name: Upload Caddy configuration
+        ansible.builtin.copy:
+          src: ../webserver/caddy
+          dest: /opt
+          owner: caddy
+          group: caddy
+          mode: '0644'
+
+      - name: Create webroot directory
+        ansible.builtin.file:
+          path: /var/www/html/fake_website
+          state: directory
+          owner: caddy
+          group: caddy
+          mode: '0744'
+
+      - name: Archive the content of the template website
+        archive:
+          path: "../webserver/template_website/{{ website }}/*"
+          dest: "../webserver/template_website/{{ website }}.tar.gz"
+        delegate_to: localhost
+
+      - name: Unarchive template website onto remote host
+        ansible.builtin.unarchive:
+          src: "../webserver/template_website/{{ website }}.tar.gz"
+          dest: /var/www/html/fake_website
+          owner: caddy
+          group: caddy
+
+      - name: Remove local website template archive
+        file: 
+          path: "../webserver/template_website/{{ website }}.tar.gz"
+          state: absent
+        delegate_to: localhost
+
+      - name: Upload service file
+        ansible.builtin.copy:
+          src: ../webserver/caddy/caddy.service
+          dest: /etc/systemd/system/
+          owner: caddy
+          group: caddy
+          mode: '0644'
+
+      -  name: Create env file with the token
+         ansible.builtin.copy:
+          content: "DIGITALOCEAN_TOKEN={{ lookup('env', 'DIGITALOCEAN_TOKEN') }}"
+          dest: /opt/caddy/.env
+          owner: root
+          group: root
+          mode: '0600'
+
+      - name: Start caddy service
+        ansible.builtin.systemd_service:
+          name: caddy
+          daemon_reload: true
+          state: reloaded
+          enabled: true
+
+      - name: Remove the token from the env file
+        ansible.builtin.lineinfile:
+          path: /etc/caddy/.env
+          regexp: '^DIGITALOCEAN_TOKEN'
+          state: absent
