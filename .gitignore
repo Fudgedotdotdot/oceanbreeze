@@ -1,8 +1,18 @@
+webserver/template_website
+webserver/Caddyfile
+
+
+### VisualStudioCode ###
+.vscode/*   
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+**/.history
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
 
@@ -159,6 +169,7 @@ cython_debug/
 .idea/
 # Local .terraform directories
 **/.terraform/*
+terraform/*terraform-plan
 
 # .tfstate files
 *.tfstate

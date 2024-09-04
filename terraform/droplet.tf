@@ -1,4 +1,5 @@
 resource "digitalocean_droplet" "oceanbreeze" {
+    count = var.spawn_droplet == 1 ? 1 : 0
     image = "ubuntu-20-04-x64"
     name = var.domain_name
     region = "ams3"

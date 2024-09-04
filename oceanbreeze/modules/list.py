@@ -30,8 +30,13 @@ def list(args):
             config.rc.warning("Didn't find any deployed infrastructure...", highlight=False)
         else:
             for workspace in helpers.terra_list_workspace():
-                config.rc.print(f"[green]-->[/green] {workspace}")
-
+                instances = config.instances.items()
+                if instances:
+                    for k, v in instances:
+                        if workspace in v:
+                            config.rc.print(f"[green]-->[/green] {workspace} ({k})")
+                else:
+                    config.rc.print(f"[green]-->[/green] {workspace} (no IP)")
 
         config.rc.info("Template websites")
         websites = Path(config.path_webserver / "template_website/")

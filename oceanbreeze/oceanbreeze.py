@@ -3,7 +3,7 @@ import os
 import argparse
 
 from oceanbreeze.config import init_config
-from oceanbreeze.modules import deploy, destroy, list
+from oceanbreeze.modules import deploy, destroy, list, update
 
 from rich.console import Console
 
@@ -46,6 +46,11 @@ def main():
     list_parser = subparser.add_parser('list', help='List active domain infrastructure')
     list_parser.add_argument("-d", "--domain", dest="domain_name", help="Get details on this workspace/domain", type=str)
 
+    update_parser = subparser.add_parser('update', help='Update instance with additional domain')
+    update_parser.add_argument("-d", "--domain", dest="domain_name", help="Domain to append to the instance", required=True, type=str)
+    update_parser.add_argument("-i", "--instance", dest="instance", required=True, type=str, help="Instance (IP or domain) on which to add the domain")
+    update_parser.add_argument("-w", "--website", dest="website", default="socialmedia", help="Upload the selected website template to the droplet")
+
     destroy_parser = subparser.add_parser('destroy', help='Destroy infrastructure')
     destroy_parser.add_argument("-d", "--domain", dest="domain_name", required=True, type=str, help="Domain to destroy")
 
@@ -67,7 +72,8 @@ def main():
         destroy.destroy()
     elif args.commands == "deploy":
         deploy.deploy()
-
+    elif args.commands == "update":
+        update.update()
 
 if __name__ == "__main__":
     main()

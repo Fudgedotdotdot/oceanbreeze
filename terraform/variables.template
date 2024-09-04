@@ -1,5 +1,0 @@
-variable "domain_name" {}
-
-data "digitalocean_ssh_key" "oceanbreeze" {
-  name = "OCEANBREEZE_SSHKEY"
-}

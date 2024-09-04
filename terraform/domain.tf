@@ -6,14 +6,14 @@ resource "digitalocean_record" "wildcard" {
   domain = digitalocean_domain.oceanbreeze.id
   type   = "A"
   name   = "*"
-  value  = digitalocean_droplet.oceanbreeze.ipv4_address
+  value  = can(digitalocean_droplet.oceanbreeze[0].ipv4_address) ? digitalocean_droplet.oceanbreeze[0].ipv4_address: var.droplet_ip
 }
 # example A
 resource "digitalocean_record" "main" {
   domain = digitalocean_domain.oceanbreeze.id
   type   = "A"
   name   = "@"
-  value  = digitalocean_droplet.oceanbreeze.ipv4_address
+  value  = can(digitalocean_droplet.oceanbreeze[0].ipv4_address) ? digitalocean_droplet.oceanbreeze[0].ipv4_address: var.droplet_ip
 }
 # example dmarc
 resource "digitalocean_record" "dmarc" {
@@ -27,7 +27,7 @@ resource "digitalocean_record" "spf" {
   domain = digitalocean_domain.oceanbreeze.id
   type   = "TXT"
   name   = "@"
-  value  = "v=spf1 include:spf.infomaniak.ch a:${var.domain_name} ip4:${digitalocean_droplet.oceanbreeze.ipv4_address} -all"
+  value  = "v=spf1 include:spf.infomaniak.ch a:${var.domain_name} ip4:%{ if length(digitalocean_droplet.oceanbreeze) == 1 }${digitalocean_droplet.oceanbreeze[0].ipv4_address}%{ else }${var.droplet_ip}%{ endif } -all"
 }
 # example mx
 resource "digitalocean_record" "mx" {

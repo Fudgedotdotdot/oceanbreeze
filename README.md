@@ -3,6 +3,8 @@
 
 ![Python minimum version](https://img.shields.io/badge/Python-3.10%2B-brightgreen)
 
+![Not compatible with version](https://img.shields.io/badge/Python-3.12-red) Not supported (for now?)
+
 ![WSL](https://img.shields.io/badge/WSL-2-blue)
 
 
@@ -28,6 +30,8 @@ Since the tool uses DigitalOcean, there a few things prepare there as well.
 
 1. Create a project that will house the ressources deployed with this tool.
 2. Create and add an SSH key to DigitalOcean. This key will be added to the droplet during the deployement process and used by Ansible.
+
+**IMPORTANT** - Because of [https://github.com/python/cpython/issues/95299](https://github.com/python/cpython/issues/95299), Python3.12 is not supported as the current build system is *setuptools*. I might change it in the futur.
 
 # Usage
 When first running the tool, a configuration menu will prompt you for information to setup the tool. 

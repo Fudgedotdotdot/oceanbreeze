@@ -12,8 +12,11 @@ from rich.prompt import Prompt
 
 @dataclass
 class Config:
+    configfile: Path
     phishdomain: str
     rootdomain: str
+    instances: dict
+    update_domain: str
     rc: Console
     project: str
     path_terra: Path
@@ -47,12 +50,16 @@ def init_config(args):
             config.rc.warning("Use the root domain, not a subdomain")
             exit()
 
-    if args.commands == "deploy":
+    if args.commands == "deploy" or args.commands == "update":
         if args.website:
             config.website = args.website
 
+    if args.commands == "update":
+        config.update_domain = args.instance
 
     config_file = Path.home() / ".config/oceanbreeze/config.json"
+    config.configfile = config_file
+    
     if config_file.is_file():
         read_config(config_file)
     else:
@@ -67,6 +74,8 @@ def read_config(config_file):
     directory = Path(config_json['directory'])
 
     config.project = config_json['project']
+    config.instances = config_json['instances']
+
     config.terra_sshkey = config_json['sshkey_terra']
     config.local_sshkey = config_json['sshkey_local']
 
@@ -112,9 +121,10 @@ def create_config(config_file):
     local_sshkey = Path(Prompt.ask(f"[dark_orange]\[?][/dark_orange] Enter the local path to the {do_sshkey} private ssh key")).expanduser()
     while not local_sshkey.is_file():
         local_sshkey = Path(Prompt.ask(f"[dark_orange]\[?][/dark_orange] Not a file - Enter the local path to the {do_sshkey} private ssh key")).expanduser()
-
+                   
     config_json = {"directory": str(directory), 
                     "project": project,
+                    "instances": dict(),
                     "sshkey_terra": do_sshkey,
                     "sshkey_local": str(local_sshkey),
                     "color_terra": config.color_terra, "color_ansible": config.color_ansible, "color_default": config.color_default,}

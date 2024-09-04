@@ -12,7 +12,7 @@ DOMAIN {
 	encode gzip zstd
 	handle {
 		file_server {
-			root /var/www/html/fake_website
+			root /var/www/html/DOMAIN
 		}
 	}
 }

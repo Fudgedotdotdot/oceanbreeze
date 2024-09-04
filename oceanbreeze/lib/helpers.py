@@ -2,6 +2,7 @@ import subprocess
 import time
 import socket
 from pathlib import Path
+import string
 import re
 import json
 
@@ -113,6 +114,56 @@ def generate_caddy_file() -> Path:
         f.write(tmp_caddy)
 
     return path_caddy
+
+
+def cleanup(terraform_outfile: Path, approve=True) -> None:
+    """
+    Cleans up the temporary plan file. Also removes the workspace if the state was not approved. 
+    """
+    Path.unlink(terraform_outfile)
+    if not approve:
+        terra_workspace("select", "default")
+        terra_workspace("delete", config.phishdomain)
+
+
+def update_configfile(ip: str) -> None:
+    with open(config.configfile, 'r') as f:
+        conf = json.load(f)
+    
+    if ip not in conf['instances'].keys():
+        conf['instances'][ip] = []
+    conf['instances'][ip].append(config.phishdomain)
+    
+    with open(config.configfile, 'w') as f:
+        json.dump(conf, f, indent=2)
+
+
+def config_getIP(instance: str) -> str:
+    """
+    Gets the ip of the instance from the config dataclass
+    Only checks the first character - [1].1.1.1 vs [g]oogle.ch
+    """
+    c = instance[0]
+    if c.isdigit():
+        if instance in config.instances.keys():
+            return instance
+    elif c.lower() in string.ascii_lowercase:
+        for k, v in config.instances.items():
+            if instance in v: return k
+        return ""
+    else:
+        config.rc.warning(f"Invalid instance name : {instance}")
+        return ""
+
+
+def terra_getIP() -> list[str]:
+    """
+    Pull the terraform state from the active workspace and returns it. 
+    """
+    state = json.loads(run_command("terraform state pull", return_output=True))
+    for rsrc in state['resources']:
+        if rsrc['type'] == "digitalocean_droplet":
+            return rsrc['instances'][0]['attributes']['ipv4_address']
 
 
 def check_port(ip: str) -> None:

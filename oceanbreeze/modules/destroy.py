@@ -9,7 +9,22 @@ from oceanbreeze.config import config
 
 
 
-def destroy_infra():
+def update_configfile(ip: str, domain: str) -> None:
+    """
+    Update the configuration file by removing the domain for the terraform state we deleted
+    """
+    with open(config.configfile, 'r') as f:
+        conf = json.load(f)
+    config.rc.debug(f"Deleting {domain} from {ip}")
+    conf['instances'][ip].remove(domain)
+    if len(conf['instances'][ip]) == 0:
+        del conf['instances'][ip]
+                
+    with open(config.configfile, 'w') as f:
+        json.dump(conf, f, indent=2)
+
+
+def destroy_infra(ip: str, domain: str):
     """
     Destroys the selected terraform state. 
     """
@@ -22,9 +37,10 @@ def destroy_infra():
 
     destroy_ok = Confirm.ask("[dark_orange]\[?][/dark_orange] Are OK with the proposed state ? ([bold red]this will auto-approve[bold red])")
     if destroy_ok:
-        helpers.run_command(f"terraform apply -destroy -auto-approve -var 'project_name={config.project}' -var 'sshkey={config.terra_sshkey}' -var 'domain_name={config.phishdomain}'")
+        helpers.run_command(f"terraform apply -destroy -auto-approve -var 'project_name={config.project}' -var 'sshkey={config.terra_sshkey}' -var 'domain_name={domain}'")
         helpers.terra_workspace("select", "default")
-        helpers.terra_workspace("delete", config.phishdomain)
+        helpers.terra_workspace("delete", domain)
+        update_configfile(ip, domain)
     else:
         config.rc.warning("Didn't deploy the state")
 
@@ -33,12 +49,26 @@ def destroy():
     """
     Entry point function for the destroy action
     """
-    if helpers.terra_check_workspace(config.phishdomain):
-        helpers.terra_workspace("select", config.phishdomain)
-    else:
-        config.rc.warning("Domain doesn't exist")
-        exit()
-    destroy_infra()
+    ip = helpers.config_getIP(config.phishdomain)
+    if not ip: config.rc.warning("Domain doesn't exist"); exit()
 
-    # ensure that we are in the default workspace
+    linked_domains = config.instances[ip]
+    if len(linked_domains) > 1:
+        config.rc.warning("Found domains linked to the same instance !")
+        destroy_ok = Confirm.ask(f"[dark_orange]\[?][/dark_orange] This will destroy these domains : [bold red]{linked_domains}[/bold red] - Is that what you want ?")
+        if not destroy_ok: exit()
+
+    delete_domains = linked_domains if len(linked_domains) > 1 else [config.phishdomain]
+
+    for domain in delete_domains:
+        if helpers.terra_check_workspace(domain):
+            helpers.terra_workspace("select", domain)
+            print(ip, domain)
+            destroy_infra(ip, domain)
+        else:
+            config.rc.warning("Domain doesn't exist")
+            exit()
+
+
+    # # ensure that we are in the default workspace
     helpers.terra_workspace("select", "default")
