@@ -30,6 +30,7 @@ Since the tool uses DigitalOcean, there a few things prepare there as well.
 
 1. Create a project that will house the ressources deployed with this tool.
 2. Create and add an SSH key to DigitalOcean. This key will be added to the droplet during the deployement process and used by Ansible.
+3. Create an [API key](https://docs.digitalocean.com/reference/api/create-personal-access-token/) (read, write) on DigitalOcean and save it in the `DIGITALOCEAN_TOKEN` environment variable
 
 **IMPORTANT** - Because of [https://github.com/python/cpython/issues/95299](https://github.com/python/cpython/issues/95299), Python3.12 is not supported as the current build system is *setuptools*. I might change it in the futur.
 
